@@ -3,3 +3,9 @@
 */
 
 #pragma once
+
+typedef struct _tower{
+	int dist;
+	int kill_est;
+} tower;
+

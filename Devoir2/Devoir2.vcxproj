@@ -65,13 +65,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="cartouches.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="messages.cpp" />
+    <ClCompile Include="utils.cpp" />
     <ClCompile Include="tireurs.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="utils.h" />
     <ClInclude Include="tireurs.h" />
     <ClInclude Include="cartouches.h" />
     <ClInclude Include="messages.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\Fichiers test\T_2_5.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

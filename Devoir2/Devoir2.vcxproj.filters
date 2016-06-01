@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="fichiers test">
+      <UniqueIdentifier>{d72c80b0-92e4-43fe-8106-4237181b70e0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="tireurs.cpp">
@@ -22,6 +25,12 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="messages.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,5 +44,13 @@
     <ClInclude Include="messages.h">
       <Filter>headers</Filter>
     </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\Fichiers test\T_2_5.txt">
+      <Filter>fichiers test</Filter>
+    </Text>
   </ItemGroup>
 </Project>
