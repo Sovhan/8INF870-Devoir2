@@ -1,1 +1,6 @@
 **/Debug/**
+**.sdf
+**.vcxproj**
+**.VC**
+**.opensdf
+**.vs
