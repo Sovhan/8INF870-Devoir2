@@ -70,8 +70,15 @@ vector<tower>* mix(vector<tower>* parent1, vector<tower>* parent2){
 
 	for(int i = ((int) parent1->size()/2); i < (int) parent1->size(); i++){
 		if (find(child1->begin(), child1->end(), (*parent2)[i]) != child1->end() || find(child2->begin(), child2->end(), (*parent1)[i]) != child2->end()) { // ensure the unicity of tower 
-			child1->push_back((*parent1)[i]);
-			child2->push_back((*parent2)[i]);
+			if (find(child1->begin(), child1->end(), (*parent1)[i]) != child1->end() || find(child2->begin(), child2->end(), (*parent2)[i]) != child2->end()) { // ensure the unicity of tower 
+				delete child1;
+				delete child2;
+				return new vector<tower>();
+			}
+			else {
+				child1->push_back((*parent1)[i]);
+				child2->push_back((*parent2)[i]);
+			}
 		}
 		else {
 			child1->push_back((*parent2)[i]);
@@ -223,7 +230,7 @@ void shooter_repartition(const char * input_file_name, const float mutation_prob
 		}
 
 		// printing the results
-		for (int i = 0; i < (int) population->size() ; i++) { 
+		for (int i = 0; i < 10 ; i++) { 
 			cout << i+1 << " : ";
 			print_indiv((*population)[i]);
 		}
@@ -248,7 +255,7 @@ void print_indiv(vector<tower>* indiv)
 	for (vector<tower>::iterator it = indiv->begin(); it != indiv->end(); it++) {
 		cout << it->dist << " ";
 	}
-	cout << " > kill estimate : " << eval_indiv(indiv) << endl;
+	cout << "> kill estimate : " << eval_indiv(indiv) << endl;
 }
 
 bool find_indiv(vector<vector<tower>*>* population, vector<tower>* indiv){
