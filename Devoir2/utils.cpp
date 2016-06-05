@@ -34,12 +34,4 @@ void tower_parse(const char* input_file_name, vector<tower> &towers, int &k, int
 		input_file >> tmp_tower.kill_est;
 		towers.push_back(tmp_tower);
 	}
-
-
-}
-
-void print_towers(vector<tower> &towers){
-	for(vector<tower>::iterator it = towers.begin(); it != towers.end(); it++){
-		cout << "tower distance: " << it->dist << " ; estimate kills per day: " << it->kill_est << endl;
-	}
 }

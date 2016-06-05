@@ -23,4 +23,3 @@ typedef struct _tower{
 
 void city_parse(const char* input_file_name, vector<point> &v);
 void tower_parse(const char* input_file_name, vector<tower> &towers, int &k, int &n);
-void print_towers(vector<tower> &towers);
