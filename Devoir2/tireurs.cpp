@@ -56,8 +56,7 @@ int aliased_select(vector<vector<tower>*> *population){
 	} else {
 		x -= 0.5;
 		pos = (int) floor(x * 2 * (population->size()-11)) + 10;
-	}
-	
+	}	
 	return pos;
 }
 
@@ -99,13 +98,14 @@ vector<tower>* mix(vector<tower>* parent1, vector<tower>* parent2){
 
 void mutate(vector<tower>* individu, vector<tower>* towers)
 {
-	if (individu->size() == towers->size()) { return; }
-	int indexMutation = rand() % individu->size();
-	int randTower;
-	do{ 
-		randTower = rand() % towers->size(); 
-	} while (find(individu->begin(), individu->end(), (*towers)[randTower]) != individu->end());
-	(*individu)[indexMutation] = (*towers)[randTower];
+	if (individu->size() != towers->size()) {
+		int indexMutation = rand() % individu->size();
+		int randTower;
+		do {
+			randTower = rand() % towers->size();
+		} while (find(individu->begin(), individu->end(), (*towers)[randTower]) != individu->end());
+		(*individu)[indexMutation] = (*towers)[randTower];
+	}
 }
 
 bool is_easy_solution(const int k, const int n, const int limit)
@@ -126,6 +126,9 @@ void child_insertion(vector<tower>* child, vector<vector<tower>*>* population)
 			}
 		}
 		population->pop_back();
+	}
+	else {
+		delete child;
 	}
 }
 
@@ -158,7 +161,9 @@ vector<vector<tower>*>* reproduction_iteration(const int nb_children, const floa
 			remaining_parents->erase(remaining_parents->begin() + index_1 - 1);
 		}
 	}
-
+	for (vector<vector<tower>*>::iterator it = remaining_parents->begin(); it != remaining_parents->end(); it++) {
+		delete *it;
+	}
 	delete remaining_parents;
 	return children;
 	
@@ -206,7 +211,6 @@ void shooter_repartition(const char * input_file_name, const float mutation_prob
 				}
 			}
 		}
-
 		// reordering population
 		sort_population(population);
 
@@ -227,8 +231,9 @@ void shooter_repartition(const char * input_file_name, const float mutation_prob
 			delete *it;
 		}
 		delete population;
-	}
 
+		delete towers;
+	}
 }
 
 void print_towers(vector<tower> &towers) {
@@ -239,7 +244,7 @@ void print_towers(vector<tower> &towers) {
 
 void print_indiv(vector<tower>* indiv)
 {
-	cout << " < ";
+	cout << "< ";
 	for (vector<tower>::iterator it = indiv->begin(); it != indiv->end(); it++) {
 		cout << it->dist << " ";
 	}
