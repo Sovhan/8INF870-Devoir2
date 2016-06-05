@@ -1,7 +1,7 @@
 **/Debug/**
-**.sdf
+*.sdf
 **.vcxproj**
 **.VC**
 **.opensdf
 **.vs
-**.suo
+*.suo
