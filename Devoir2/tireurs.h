@@ -27,7 +27,7 @@ void shooter_repartition(const char* input_file_name, const float mutation_prob,
 
 void print_towers(vector<tower> &towers);
 void print_indiv(vector<tower>* indiv);
-
+bool find_indiv(vector<vector<tower>*>* population, vector<tower>* indiv);
 bool operator==(vector<tower> &towers1, vector<tower> &towers2);
 bool operator>(vector<tower> &towers1, vector<tower> &towers2);
 bool operator<(vector<tower> &towers1, vector<tower> &towers2);

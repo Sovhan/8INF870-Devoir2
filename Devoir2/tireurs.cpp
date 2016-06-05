@@ -35,7 +35,8 @@ int eval_indiv(vector<tower> * indiv){
 
 bool compare_indiv(const void * indiv_a, const void * indiv_b)
 {
-	if (*(vector<tower>*) indiv_a < *(vector<tower>*) indiv_b) 
+	// reverse comparison order for descending order in std::sort 
+	if (*(vector<tower>*) indiv_a > *(vector<tower>*) indiv_b) 
 		return true;
 	else {
 		return false;
@@ -47,7 +48,7 @@ void sort_population(vector<vector<tower>*>* population){
 }
 
 int aliased_select(vector<vector<tower>*> *population){
-	if (population->size() < 10) { return rand() % population->size(); }
+	if (population->size() <= 20) { return rand() % population->size(); }
 	int pos;
 	float x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 	if (x < 0.5){
@@ -79,14 +80,14 @@ vector<tower>* mix(vector<tower>* parent1, vector<tower>* parent2){
 		}
 	}
 
-	if (child1 == parent1 || child2 == parent2 || child1 == parent2 || child2 == parent1)
+	if (*child1 == *parent1 || *child2 == *parent2 || *child1 == *parent2 || *child2 == *parent1)
 	{
 		delete child1;
 		delete child2;
 		return new vector<tower>();
 	}
 
-	if(child1 < child2){
+	if(*child1 < *child2){
 		delete child1;
 		return child2;
 	}
@@ -117,14 +118,14 @@ bool is_easy_solution(const int k, const int n, const int limit)
 
 void child_insertion(vector<tower>* child, vector<vector<tower>*>* population)
 {
-	if (child > population->back()) {
+	if (*child > *population->back() && !find_indiv(population, child)){
 		for (vector<vector<tower>*>::iterator it = population->begin(); it != population->end(); it++) {
-			if (child > *it) {
+			if (*child > *(*it)) {
 				population->insert(it, child);
-				population->pop_back();
 				break;
 			}
 		}
+		population->pop_back();
 	}
 }
 
@@ -157,7 +158,10 @@ vector<vector<tower>*>* reproduction_iteration(const int nb_children, const floa
 			remaining_parents->erase(remaining_parents->begin() + index_1 - 1);
 		}
 	}
+
+	delete remaining_parents;
 	return children;
+	
 }
 
 vector<vector<tower>*>* copy_population(vector<vector<tower>*>* population)
@@ -174,6 +178,10 @@ vector<vector<tower>*>* copy_population(vector<vector<tower>*>* population)
 	return copy;
 }
 
+
+/**
+* \fn shooter_repartition genetic algorithm heuristic for selection of towers (question1)
+*/
 void shooter_repartition(const char * input_file_name, const float mutation_prob, const int limit, 
 						 const int population_size, const int nb_children, const int nb_iteration)
 {
@@ -184,7 +192,9 @@ void shooter_repartition(const char * input_file_name, const float mutation_prob
 		vector<vector<tower>*>* population = generate_initial_pop(towers, k); 
 		sort_population(population);
 		vector<vector<tower>*>* children;
-		while ((int) population->size() < population_size) { // population growth until reaching population_size
+
+		// population growth until reaching population_size
+		while ((int) population->size() < population_size) { 
 			children = reproduction_iteration(nb_children, mutation_prob, population, towers);
 			sort_population(children);
 			for (int i = 0; i < (int) children->size(); i++) {
@@ -196,16 +206,29 @@ void shooter_repartition(const char * input_file_name, const float mutation_prob
 				}
 			}
 		}
-		for (int j = 0; j < nb_iteration; j++) {
+
+		// reordering population
+		sort_population(population);
+
+		// iteration of genetic algorithm
+		for (int j = 0; j < nb_iteration; j++) { 
 			children = reproduction_iteration(nb_children, mutation_prob, population, towers);
 			for (int i = 0; i < (int) children->size(); i++) {
 				child_insertion((*children)[i], population);
 			}
 		}
-		for (int i = 0; i < 10; i++) {
+
+		// printing the results
+		for (int i = 0; i < (int) population->size() ; i++) { 
+			cout << i+1 << " : ";
 			print_indiv((*population)[i]);
 		}
+		for (vector<vector<tower>*>::iterator it  = population->begin(); it != population->end(); it++){
+			delete *it;
+		}
+		delete population;
 	}
+
 }
 
 void print_towers(vector<tower> &towers) {
@@ -220,9 +243,18 @@ void print_indiv(vector<tower>* indiv)
 	for (vector<tower>::iterator it = indiv->begin(); it != indiv->end(); it++) {
 		cout << it->dist << " ";
 	}
-	cout << " kill estimat : " << eval_indiv(indiv) << endl;
+	cout << " > kill estimate : " << eval_indiv(indiv) << endl;
 }
 
+bool find_indiv(vector<vector<tower>*>* population, vector<tower>* indiv){
+	for(vector<vector<tower>*>::iterator it = population->begin(); it != population->end(); it++){
+		if (*(*it) == *indiv){
+			return true;
+		}
+	}
+
+	return false;
+}
 
 bool operator==(vector<tower>& towers1, vector<tower>& towers2)
 {

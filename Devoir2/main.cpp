@@ -12,7 +12,7 @@ int main(void){
 	print_towers(towers);
 	*/
 
-	shooter_repartition("../Fichiers test/T_2_5.txt", 0.5, 1, 100, 5, 1000);
+	shooter_repartition("../Fichiers test/T_5_30.txt", 0.5, 1, 100, 5, 1000);
 	cin.get();
 	return 0;
 }
