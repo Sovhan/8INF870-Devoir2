@@ -4,17 +4,17 @@
 
 #include "tireurs.h"
 
-vector<vector<tower>*>* generate_initial_pop(vector<tower>* towers, int &k){
+vector<vector<tower>*>* generate_initial_pop(vector<tower>* towers, int &k, const int dist){
 	int next, n = towers->size();
 	vector<vector<tower>*>* population = new vector<vector<tower>*>();
 	vector<tower>* individu;
 	vector<int> selected;
 	for (int i = 0; i <= n/k; i++){
 		individu = new vector<tower>();
-		for ( int j = 0; j < k; j++){
+		for (int j = 0; j < k; j++){
 			do {
 				next = rand() % n;
-			} while( find(individu->begin(), individu->end(), (*towers)[next] ) != individu->end());
+			} while( find(individu->begin(), individu->end(), (*towers)[next] ) != individu->end() || !eval_dist_with_specific_tower(individu, (*towers)[next], dist));
 			individu->push_back((*towers)[next]);
 		}
 		population->push_back(individu);
@@ -31,6 +31,40 @@ int eval_indiv(vector<tower> * indiv){
 	}
 
 	return value;
+}
+
+bool eval_dist(vector<tower>* indiv, const int dist)
+{
+	bool res = true;
+	if (dist > 0) {
+		for (vector<tower>::iterator it = indiv->begin(); it != indiv->end(); it++) {
+			res = eval_dist_with_specific_tower(indiv, *it, dist);
+			if (res == false) {
+				return res;
+			}
+		}
+	}
+
+	return res;
+}
+
+bool eval_dist_with_specific_tower(vector<tower>* indiv, tower tower_spe, const int dist)
+{
+	for (vector<tower>::iterator it = indiv->begin(); it != indiv->end(); it++) {
+		if (it->dist > tower_spe.dist) {
+			if ((it->dist - tower_spe.dist) <= dist) {
+				return false;
+			}
+		}
+		else {
+			if (it->dist < tower_spe.dist) {
+				if ((tower_spe.dist - it->dist) <= dist) {
+					return false;
+				}
+			}
+		}
+	}
+	return true;
 }
 
 bool compare_indiv(const void * indiv_a, const void * indiv_b)
@@ -60,7 +94,7 @@ int aliased_select(vector<vector<tower>*> *population){
 	return pos;
 }
 
-vector<tower>* mix(vector<tower>* parent1, vector<tower>* parent2){
+vector<tower>* mix(vector<tower>* parent1, vector<tower>* parent2, const int dist){
 	vector<tower>* child1 = new vector<tower>();
 	vector<tower>* child2 = new vector<tower>();
 	for(int i = 0; i < ((int) parent1->size()/2); i++){
@@ -94,16 +128,43 @@ vector<tower>* mix(vector<tower>* parent1, vector<tower>* parent2){
 	}
 
 	if(*child1 < *child2){
-		delete child1;
-		return child2;
+		if (eval_dist(child2, dist)) {
+			delete child1;
+			return child2;
+		}
+		else {
+			if (eval_dist(child1, dist)) {
+				delete child2;
+				return child1;
+			}
+			else {
+				delete child1;
+				delete child2;
+				return new vector<tower>();
+			}
+		}
 	}
 	else {
-		delete child2;
-		return child1;
+		if (eval_dist(child1, dist)) {
+			delete child2;
+			return child1;
+		}
+		else {
+			if (eval_dist(child2, dist)) {
+				delete child1;
+				return child2;
+			}
+			else {
+				delete child1;
+				delete child2;
+				return new vector<tower>();
+			}
+		}
+		
 	}
 }
 
-void mutate(vector<tower>* individu, vector<tower>* towers)
+void mutate(vector<tower>* individu, vector<tower>* towers, const int dist)
 {
 	if (individu->size() != towers->size()) {
 		int indexMutation = rand() % individu->size();
@@ -111,7 +172,9 @@ void mutate(vector<tower>* individu, vector<tower>* towers)
 		do {
 			randTower = rand() % towers->size();
 		} while (find(individu->begin(), individu->end(), (*towers)[randTower]) != individu->end());
-		(*individu)[indexMutation] = (*towers)[randTower];
+		if (eval_dist_with_specific_tower(individu, (*towers)[randTower], dist)) {
+			(*individu)[indexMutation] = (*towers)[randTower];
+		}
 	}
 }
 
@@ -139,23 +202,23 @@ void child_insertion(vector<tower>* child, vector<vector<tower>*>* population)
 	}
 }
 
-vector<vector<tower>*>* reproduction_iteration(const int nb_children, const float mutation_prob, vector<vector<tower>*>* population, vector<tower>* towers)
+vector<vector<tower>*>* reproduction_iteration(const int nb_children, const float mutation_prob, vector<vector<tower>*>* population, vector<tower>* towers, const int dist)
 {
 	vector<vector<tower>*>* remaining_parents = copy_population(population); // copy of the population
 	vector<vector<tower>*>* children = new vector<vector<tower>*>(); // allocate vector of children
 	vector<tower>* child = new vector<tower>();
 	int index_1, index_2;
-	int max_children = min(nb_children, (int) population->size() / 2); // if nb children > population / 2 can't generate enough children
-	for (int i = 0; i < max_children; i++) {
+	//int max_children = min(nb_children, (int) population->size() / 2); // if nb children > population / 2 can't generate enough children
+	for (int i = 0; i < min(nb_children, (int)remaining_parents->size() / 2); i++) { 
 		do {	
 			do {
 				index_1 = aliased_select(remaining_parents); // use the heuristic
 				index_2 = aliased_select(remaining_parents);
 			} while (index_2 == index_1);
-			child = mix((*population)[index_1], (*population)[index_2]);
+			child = mix((*remaining_parents)[index_1], (*remaining_parents)[index_2], dist); // check on the remaining_parents
 		} while(child->empty());
 		if (static_cast <float> (rand()) / static_cast <float> (RAND_MAX) < mutation_prob) { 
-			mutate(child, towers);
+			mutate(child, towers, dist);
 		}
 		children->push_back(child);
 
@@ -195,22 +258,22 @@ vector<vector<tower>*>* copy_population(vector<vector<tower>*>* population)
 * \fn shooter_repartition genetic algorithm heuristic for selection of towers (question1)
 */
 void shooter_repartition(const char * input_file_name, const float mutation_prob, const int limit, 
-						 const int population_size, const int nb_children, const int nb_iteration)
+						 const int population_size, const int nb_children, const int nb_iteration, const int dist)
 {
 	vector<tower>* towers = new vector<tower>();
 	int k, n;
 	tower_parse(input_file_name, *towers, k, n);
 	if (!is_easy_solution(k, n, limit)) {
-		vector<vector<tower>*>* population = generate_initial_pop(towers, k); 
+		vector<vector<tower>*>* population = generate_initial_pop(towers, k, dist); 
 		sort_population(population);
 		vector<vector<tower>*>* children;
 
 		// population growth until reaching population_size
 		while ((int) population->size() < population_size) { 
-			children = reproduction_iteration(nb_children, mutation_prob, population, towers);
+			children = reproduction_iteration(nb_children, mutation_prob, population, towers, dist);
 			sort_population(children);
 			for (int i = 0; i < (int) children->size(); i++) {
-				if ((int) population->size() < population_size) { //do not oversize the population_size
+				if ((int) population->size() < population_size) { //do not oversize the population_size  && !find_indiv(population, (*children)[i])
 					population->push_back((*children)[i]);
 				}
 				else {
@@ -223,7 +286,7 @@ void shooter_repartition(const char * input_file_name, const float mutation_prob
 
 		// iteration of genetic algorithm
 		for (int j = 0; j < nb_iteration; j++) { 
-			children = reproduction_iteration(nb_children, mutation_prob, population, towers);
+			children = reproduction_iteration(nb_children, mutation_prob, population, towers, dist);
 			for (int i = 0; i < (int) children->size(); i++) {
 				child_insertion((*children)[i], population);
 			}
@@ -240,6 +303,9 @@ void shooter_repartition(const char * input_file_name, const float mutation_prob
 		delete population;
 
 		delete towers;
+	}
+	else {
+		cout << "NO SOLUTION" ;
 	}
 }
 
