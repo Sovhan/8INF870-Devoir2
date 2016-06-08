@@ -5,10 +5,50 @@
 #include "tireurs.h"
 #include "utils.h"
 
+void change_var(vector<tower>* towers, int index, float taux_var)
+{
+	float var = unif(-taux_var, taux_var);
+	if ((*towers)[index].var_est == 0) {
+		(*towers)[index].var_est = 1 + var;
+		if (var > 0) {
+			if (index + 1 < (int) towers->size() && (*towers)[index + 1].var_est == 0) {
+				(*towers)[index + 1].var_est = 1 + unif(-taux_var, 0);
+			}
+			if (index - 1 >= 0 && (*towers)[index - 1].var_est == 0) {
+				(*towers)[index - 1].var_est = 1 + unif(-taux_var, 0);
+			}
+		}
+		else {
+			if (index + 1 < (int) towers->size() && (*towers)[index + 1].var_est == 0) {
+				(*towers)[index + 1].var_est = 1 + unif(0, taux_var);
+			}
+			if (index - 1 >= 0 && (*towers)[index - 1].var_est == 0) {
+				(*towers)[index - 1].var_est = 1 + unif(0, taux_var);
+			}
+		}
+	}
+}
+
+void reset_towers(vector<tower>* towers)
+{
+	for (int l = 0; l < (int) towers->size(); l++) {
+		(*towers)[l].var_est = 0.0;
+	}
+}
+
+void spread_indiv_var(vector<tower>* indiv, vector<tower> *towers, float taux_var)
+{
+	reset_towers(towers);
+	for (vector<tower>::iterator it = indiv->begin(); it != indiv->end(); it++) {
+		change_var(towers, it->id, taux_var);
+		it->var_est = towers->at(it->id).var_est;
+	}
+}
+
 /**
 *
 */
-vector<vector<tower>*>* generate_initial_pop(vector<tower>* towers, int &k, const int dist){
+vector<vector<tower>*>* generate_initial_pop(vector<tower>* towers, int &k, const int dist, float taux_var){
 	int next, n = towers->size();
 	vector<vector<tower>*>* population = new vector<vector<tower>*>();
 	vector<tower>* individu;
@@ -19,8 +59,10 @@ vector<vector<tower>*>* generate_initial_pop(vector<tower>* towers, int &k, cons
 			do {
 				next = rand() % n;
 			} while( find(individu->begin(), individu->end(), (*towers)[next] ) != individu->end() || ! check_dist_with_specific_tower(individu, (*towers)[next], dist));
+			change_var(towers, next, taux_var);
 			individu->push_back((*towers)[next]);
 		}
+		reset_towers(towers);
 		population->push_back(individu);
 	}
 
@@ -34,7 +76,7 @@ int eval_indiv(vector<tower> * indiv){
 	int value = 0;
 	
 	for (vector<tower>::iterator it = indiv->begin(); it != indiv->end(); it++){
-		value += it->kill_est;
+		value += (int) (it->kill_est * it->var_est);
 	}
 
 	return value;
@@ -103,7 +145,7 @@ int aliased_select(vector<vector<tower>*> *population){
 /**
 *
 */
-vector<tower>* mix(vector<tower>* parent1, vector<tower>* parent2, const int dist){
+vector<tower>* mix(vector<tower>* parent1, vector<tower>* parent2, const int dist, vector<tower>* towers, float taux_var){
 	vector<tower>* child1 = new vector<tower>();
 	vector<tower>* child2 = new vector<tower>();
 	for(int i = 0; i < ((int) parent1->size()/2); i++){
@@ -135,6 +177,10 @@ vector<tower>* mix(vector<tower>* parent1, vector<tower>* parent2, const int dis
 		delete child2;
 		return new vector<tower>();
 	}
+
+	// reset child and spread var
+	spread_indiv_var(child1, towers, taux_var);
+	spread_indiv_var(child2, towers, taux_var);
 
 	if(*child1 < *child2){
 		if (check_dist(child2, dist)) {
@@ -176,7 +222,7 @@ vector<tower>* mix(vector<tower>* parent1, vector<tower>* parent2, const int dis
 /**
 *
 */
-void mutate(vector<tower>* individu, vector<tower>* towers, const int dist)
+void mutate(vector<tower>* individu, vector<tower>* towers, const int dist, float taux_var)
 {
 	if (individu->size() != towers->size()) {
 		int indexMutation = rand() % individu->size();
@@ -186,6 +232,7 @@ void mutate(vector<tower>* individu, vector<tower>* towers, const int dist)
 		} while (find(individu->begin(), individu->end(), (*towers)[randTower]) != individu->end());
 		if (check_dist_with_specific_tower(individu, (*towers)[randTower], dist)) {
 			(*individu)[indexMutation] = (*towers)[randTower];
+			spread_indiv_var(individu, towers, taux_var);
 		}
 	}
 }
@@ -232,7 +279,7 @@ void child_insertion(vector<tower>* child, vector<vector<tower>*>* population)
 /**
 *
 */
-vector<vector<tower>*>* reproduction_iteration(const int nb_children, const float mutation_prob, vector<vector<tower>*>* population, vector<tower>* towers, const int dist)
+vector<vector<tower>*>* reproduction_iteration(const int nb_children, const float mutation_prob, vector<vector<tower>*>* population, vector<tower>* towers, const int dist, float taux_var)
 {
 	vector<vector<tower>*>* remaining_parents = copy_population(population); // copy of the population
 	vector<vector<tower>*>* children = new vector<vector<tower>*>(); // allocate vector of children
@@ -245,10 +292,10 @@ vector<vector<tower>*>* reproduction_iteration(const int nb_children, const floa
 				index_1 = aliased_select(remaining_parents); // use the heuristic
 				index_2 = aliased_select(remaining_parents);
 			} while (index_2 == index_1);
-			child = mix((*remaining_parents)[index_1], (*remaining_parents)[index_2], dist); // check on the remaining_parents
+			child = mix((*remaining_parents)[index_1], (*remaining_parents)[index_2], dist, towers, taux_var); // check on the remaining_parents
 		} while(child->empty());
 		if (static_cast <float> (rand()) / static_cast <float> (RAND_MAX) < mutation_prob) { 
-			mutate(child, towers, dist);
+			mutate(child, towers, dist, taux_var);
 		}
 		children->push_back(child);
 
@@ -288,19 +335,20 @@ vector<vector<tower>*>* copy_population(vector<vector<tower>*>* population)
 * \fn shooter_repartition genetic algorithm heuristic for selection of towers (question1)
 */
 void shooter_repartition(const char * input_file_name, const float mutation_prob, const int population_size, 
-						 const int nb_children, const int nb_iteration, const int dist)
+						 const int nb_children, const int nb_iteration, const int dist, float taux_var)
 {
 	vector<tower>* towers = new vector<tower>();
 	int k, n;
 	tower_parse(input_file_name, *towers, k, n);
+	srand((unsigned int) time(NULL));
 	if (!is_easy_solution(k, n)) {
-		vector<vector<tower>*>* population = generate_initial_pop(towers, k, dist); 
+		vector<vector<tower>*>* population = generate_initial_pop(towers, k, dist, taux_var);
 		sort_population(population);
 		vector<vector<tower>*>* children;
 
 		// population growth until reaching population_size
 		while ((int) population->size() < population_size) { 
-			children = reproduction_iteration(nb_children, mutation_prob, population, towers, dist);
+			children = reproduction_iteration(nb_children, mutation_prob, population, towers, dist, taux_var);
 			sort_population(children);
 			for (int i = 0; i < (int) children->size(); i++) {
 				if ((int) population->size() < population_size) { //do not oversize the population_size  && !find_indiv(population, (*children)[i])
@@ -316,7 +364,7 @@ void shooter_repartition(const char * input_file_name, const float mutation_prob
 
 		// iteration of genetic algorithm
 		for (int j = 0; j < nb_iteration; j++) { 
-			children = reproduction_iteration(nb_children, mutation_prob, population, towers, dist);
+			children = reproduction_iteration(nb_children, mutation_prob, population, towers, dist, taux_var);
 			for (int i = 0; i < (int) children->size(); i++) {
 				child_insertion((*children)[i], population);
 			}
@@ -344,6 +392,8 @@ void shooter_repartition(const char * input_file_name, const float mutation_prob
 			perm_indexes[l] = l;
 			tmp_indiv->push_back((*towers)[l]);
 		}
+		// spread var for variance
+		spread_indiv_var(tmp_indiv, towers, taux_var);
 		*best_indiv = *tmp_indiv;
 		best_eval = check_dist(best_indiv, dist) ? eval_indiv(best_indiv) : 0;
 		for (int j = 0; j < nb_perm; j++){
@@ -351,6 +401,7 @@ void shooter_repartition(const char * input_file_name, const float mutation_prob
 			for (int i = 0; i < k ; i++){
 				tmp_indiv->at(i) = towers->at(perm_indexes[i]);
 			}
+			spread_indiv_var(tmp_indiv, towers, taux_var);
 			if(check_dist(tmp_indiv,dist)) {
 				tmp_eval = eval_indiv(tmp_indiv);
 				if (tmp_eval > best_eval) {
@@ -387,9 +438,9 @@ void print_towers(vector<tower> &towers) {
 
 void print_indiv(vector<tower>* indiv)
 {
-	cout << "< ";
+	cout << "<";
 	for (vector<tower>::iterator it = indiv->begin(); it != indiv->end(); it++) {
-		cout << it->dist << " ";
+		cout << " (" << it->dist << ", " << it->var_est << ");";
 	}
 	cout << "> kill estimate : " << eval_indiv(indiv) << endl;
 }
