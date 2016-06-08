@@ -193,13 +193,13 @@ void mutate(vector<tower>* individu, vector<tower>* towers, const int dist)
 /**
 *
 */
-bool is_easy_solution(const int k, const int n, const int limit)
+bool is_easy_solution(const int k, const int n)
 {
 	double fn, fk, fnk, ll, bino;
 	fn = stirling_approx(n);
 	fk = stirling_approx(k);
 	fnk = stirling_approx(n-k);
-	ll = log(limit);
+	ll = log(100000); // limit heristic
 	bino = fn - fk - fnk;
 	int binomial = binomial_coef(n,k);
 	if (n <= 1) { return true; }
@@ -287,13 +287,13 @@ vector<vector<tower>*>* copy_population(vector<vector<tower>*>* population)
 /**
 * \fn shooter_repartition genetic algorithm heuristic for selection of towers (question1)
 */
-void shooter_repartition(const char * input_file_name, const float mutation_prob, const int limit, 
-						 const int population_size, const int nb_children, const int nb_iteration, const int dist)
+void shooter_repartition(const char * input_file_name, const float mutation_prob, const int population_size, 
+						 const int nb_children, const int nb_iteration, const int dist)
 {
 	vector<tower>* towers = new vector<tower>();
 	int k, n;
 	tower_parse(input_file_name, *towers, k, n);
-	if (!is_easy_solution(k, n, limit)) {
+	if (!is_easy_solution(k, n)) {
 		vector<vector<tower>*>* population = generate_initial_pop(towers, k, dist); 
 		sort_population(population);
 		vector<vector<tower>*>* children;

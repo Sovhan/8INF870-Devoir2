@@ -21,11 +21,11 @@ void sort_population(vector<vector<tower>*>* population);
 int aliased_select(vector<vector<tower>*> *population);
 vector<tower>* mix(vector<tower>* parent1, vector<tower>* parent2, const int dist);
 void mutate(vector<tower>* individu, vector<tower> *towers, const int dist);
-bool is_easy_solution(const int k, const int n, const int limit);
+bool is_easy_solution(const int k, const int n);
 void child_insertion(vector<tower> *child, vector<vector<tower>*>* population);
 vector<vector<tower>*>* reproduction_iteration(const int nb_children, const float mutation_prob, vector<vector<tower>*>* population, vector<tower>* towers, const int dist);
 vector<vector<tower>*>* copy_population(vector<vector<tower>*>* population);
-void shooter_repartition(const char* input_file_name, const float mutation_prob, const int limit, const int population_size, const int nb_children, const int nb_iteration, const int dist);
+void shooter_repartition(const char* input_file_name, const float mutation_prob, const int population_size, const int nb_children, const int nb_iteration, const int dist);
 
 void print_towers(vector<tower> &towers);
 void print_indiv(vector<tower>* indiv);
