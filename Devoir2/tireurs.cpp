@@ -142,7 +142,7 @@ vector<tower>* mix(vector<tower>* parent1, vector<tower>* parent2, const int dis
 			return child2;
 		}
 		else {
-			if (check_dist(child1, dist)) {
+			if (check_dist(child1, dist)) {// if the first child don't respect the distance try it for the orher child
 				delete child2;
 				return child1;
 			}
@@ -159,7 +159,7 @@ vector<tower>* mix(vector<tower>* parent1, vector<tower>* parent2, const int dis
 			return child1;
 		}
 		else {
-			if (check_dist(child2, dist)) {
+			if (check_dist(child2, dist)) {// if the first child don't respect the distance try it for the orher child
 				delete child1;
 				return child2;
 			}
