@@ -35,3 +35,26 @@ void tower_parse(const char* input_file_name, vector<tower> &towers, int &k, int
 		towers.push_back(tmp_tower);
 	}
 }
+
+int binomial_coef(int n, int k){
+	int den, num;
+
+    if ( n < k ) 
+    {
+       return(0) ; 
+    }
+    else 
+    {
+	den = 1;
+	num = 1 ; 
+	for (int i =  1  ; i <= k   ; i = i+1) //k! the ugly way
+	    den =    den * i;
+	for (int j = n-k+1; j<=n; j=j+1)	// n! / (n-k)! the uglier way
+	    num = num * j;
+	return(num/den);
+	}
+}
+
+double stirling_approx(int n){
+	return static_cast<int> (n * log(n)) - n + (0.5 * log(2 * M_PI * n));
+}

@@ -3,7 +3,11 @@
 */
 
 #include "tireurs.h"
+#include "utils.h"
 
+/**
+*
+*/
 vector<vector<tower>*>* generate_initial_pop(vector<tower>* towers, int &k, const int dist){
 	int next, n = towers->size();
 	vector<vector<tower>*>* population = new vector<vector<tower>*>();
@@ -14,7 +18,7 @@ vector<vector<tower>*>* generate_initial_pop(vector<tower>* towers, int &k, cons
 		for (int j = 0; j < k; j++){
 			do {
 				next = rand() % n;
-			} while( find(individu->begin(), individu->end(), (*towers)[next] ) != individu->end() || !eval_dist_with_specific_tower(individu, (*towers)[next], dist));
+			} while( find(individu->begin(), individu->end(), (*towers)[next] ) != individu->end() || ! check_dist_with_specific_tower(individu, (*towers)[next], dist));
 			individu->push_back((*towers)[next]);
 		}
 		population->push_back(individu);
@@ -23,6 +27,9 @@ vector<vector<tower>*>* generate_initial_pop(vector<tower>* towers, int &k, cons
 	return population;
 }
 
+/**
+*
+*/
 int eval_indiv(vector<tower> * indiv){
 	int value = 0;
 	
@@ -33,40 +40,33 @@ int eval_indiv(vector<tower> * indiv){
 	return value;
 }
 
-bool eval_dist(vector<tower>* indiv, const int dist)
+/**
+* \returns false if a couple of towers in the vector are too close according to dist
+*/
+bool check_dist(vector<tower>* indiv, const int dist)
 {
-	bool res = true;
 	if (dist > 0) {
 		for (vector<tower>::iterator it = indiv->begin(); it != indiv->end(); it++) {
-			res = eval_dist_with_specific_tower(indiv, *it, dist);
-			if (res == false) {
-				return res;
-			}
-		}
-	}
-
-	return res;
-}
-
-bool eval_dist_with_specific_tower(vector<tower>* indiv, tower tower_spe, const int dist)
-{
-	for (vector<tower>::iterator it = indiv->begin(); it != indiv->end(); it++) {
-		if (it->dist > tower_spe.dist) {
-			if ((it->dist - tower_spe.dist) <= dist) {
-				return false;
-			}
-		}
-		else {
-			if (it->dist < tower_spe.dist) {
-				if ((tower_spe.dist - it->dist) <= dist) {
-					return false;
-				}
-			}
+			if(! check_dist_with_specific_tower(indiv, *it, dist)) return false;
 		}
 	}
 	return true;
 }
 
+/**
+* \returns false if tower_spe is too close of another tower in the vector
+*/
+bool check_dist_with_specific_tower(vector<tower>* indiv, tower tower_spe, const int dist)
+{
+	for (vector<tower>::iterator it = indiv->begin(); it != indiv->end(); it++) {
+		if (abs(it->dist - tower_spe.dist) <= dist && it->dist - tower_spe.dist != 0) return false;
+	}
+	return true;
+}
+
+/**
+*
+*/
 bool compare_indiv(const void * indiv_a, const void * indiv_b)
 {
 	// reverse comparison order for descending order in std::sort 
@@ -77,10 +77,16 @@ bool compare_indiv(const void * indiv_a, const void * indiv_b)
 	}
 }
 
+/**
+*
+*/
 void sort_population(vector<vector<tower>*>* population){
 	sort(population->begin(), population->end(), compare_indiv);
 }
 
+/**
+*
+*/
 int aliased_select(vector<vector<tower>*> *population){
 	if (population->size() <= 20) { return rand() % population->size(); }
 	int pos;
@@ -94,6 +100,9 @@ int aliased_select(vector<vector<tower>*> *population){
 	return pos;
 }
 
+/**
+*
+*/
 vector<tower>* mix(vector<tower>* parent1, vector<tower>* parent2, const int dist){
 	vector<tower>* child1 = new vector<tower>();
 	vector<tower>* child2 = new vector<tower>();
@@ -128,12 +137,12 @@ vector<tower>* mix(vector<tower>* parent1, vector<tower>* parent2, const int dis
 	}
 
 	if(*child1 < *child2){
-		if (eval_dist(child2, dist)) {
+		if (check_dist(child2, dist)) {
 			delete child1;
 			return child2;
 		}
 		else {
-			if (eval_dist(child1, dist)) {
+			if (check_dist(child1, dist)) {
 				delete child2;
 				return child1;
 			}
@@ -145,12 +154,12 @@ vector<tower>* mix(vector<tower>* parent1, vector<tower>* parent2, const int dis
 		}
 	}
 	else {
-		if (eval_dist(child1, dist)) {
+		if (check_dist(child1, dist)) {
 			delete child2;
 			return child1;
 		}
 		else {
-			if (eval_dist(child2, dist)) {
+			if (check_dist(child2, dist)) {
 				delete child1;
 				return child2;
 			}
@@ -164,6 +173,9 @@ vector<tower>* mix(vector<tower>* parent1, vector<tower>* parent2, const int dis
 	}
 }
 
+/**
+*
+*/
 void mutate(vector<tower>* individu, vector<tower>* towers, const int dist)
 {
 	if (individu->size() != towers->size()) {
@@ -172,20 +184,34 @@ void mutate(vector<tower>* individu, vector<tower>* towers, const int dist)
 		do {
 			randTower = rand() % towers->size();
 		} while (find(individu->begin(), individu->end(), (*towers)[randTower]) != individu->end());
-		if (eval_dist_with_specific_tower(individu, (*towers)[randTower], dist)) {
+		if (check_dist_with_specific_tower(individu, (*towers)[randTower], dist)) {
 			(*individu)[indexMutation] = (*towers)[randTower];
 		}
 	}
 }
 
+/**
+*
+*/
 bool is_easy_solution(const int k, const int n, const int limit)
 {
+	double fn, fk, fnk, ll, bino;
+	fn = stirling_approx(n);
+	fk = stirling_approx(k);
+	fnk = stirling_approx(n-k);
+	ll = log(limit);
+	bino = fn - fk - fnk;
+	int binomial = binomial_coef(n,k);
 	if (n <= 1) { return true; }
 	else {
-		return k <= log(limit) / log(n);
+		return bino *0.95 <= ll;
 	}	
 }
 
+
+/**
+*
+*/
 void child_insertion(vector<tower>* child, vector<vector<tower>*>* population)
 {
 	if (*child > *population->back() && !find_indiv(population, child)){
@@ -202,6 +228,10 @@ void child_insertion(vector<tower>* child, vector<vector<tower>*>* population)
 	}
 }
 
+
+/**
+*
+*/
 vector<vector<tower>*>* reproduction_iteration(const int nb_children, const float mutation_prob, vector<vector<tower>*>* population, vector<tower>* towers, const int dist)
 {
 	vector<vector<tower>*>* remaining_parents = copy_population(population); // copy of the population
@@ -301,12 +331,52 @@ void shooter_repartition(const char * input_file_name, const float mutation_prob
 			delete *it;
 		}
 		delete population;
+	}
+	else { // generate all the permutations and verify which is the best;
+		int tmp_eval = 0, best_eval = 0;
+		int nb_perm = binomial_coef(n,k);
+		int t_size = towers->size();
+		int *perm_indexes = (int*) malloc( k * sizeof(int)); //build index tracker to avoid repeating indivs
+		vector<tower> *tmp_indiv, *best_indiv;
+		tmp_indiv = new vector<tower>();
+		best_indiv = new vector<tower>();
+		for(int l = 0; l<k; l++){
+			perm_indexes[l] = l;
+			tmp_indiv->push_back((*towers)[l]);
+		}
+		*best_indiv = *tmp_indiv;
+		best_eval = check_dist(best_indiv, dist) ? eval_indiv(best_indiv) : 0;
+		for (int j = 0; j < nb_perm; j++){
+			//build and eval permutation
+			for (int i = 0; i < k ; i++){
+				tmp_indiv->at(i) = towers->at(perm_indexes[i]);
+			}
+			if(check_dist(tmp_indiv,dist)) {
+				tmp_eval = eval_indiv(tmp_indiv);
+				if (tmp_eval > best_eval) {
+					best_eval = tmp_eval;
+					*best_indiv = *tmp_indiv;
+				}
+			}
+			//update of indexes tracker
+			perm_indexes[k-1]++;
+			for( int m = k-2; m >= 0; m--){ //go to next permutation
+				if (perm_indexes[m+1] > t_size-(k-m-1)){
+					perm_indexes[m]++;
+					for(int p = m+1; p < k; p++){//correcting overflow
+						perm_indexes[p] = perm_indexes[p-1]+1; 
+					}
+				}
+			}
+		}
+		print_indiv(best_indiv);
+		free(perm_indexes);
+		delete best_indiv;
+		delete tmp_indiv;
 
-		delete towers;
 	}
-	else {
-		cout << "NO SOLUTION" ;
-	}
+
+	delete towers;
 }
 
 void print_towers(vector<tower> &towers) {

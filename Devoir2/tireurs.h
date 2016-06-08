@@ -14,8 +14,8 @@ using namespace std;
 
 vector<vector<tower>*>* generate_initial_pop(vector<tower> *towers, int &k, const int dist);
 int eval_indiv(vector<tower> *indiv);
-bool eval_dist(vector<tower> *indiv, const int dist);
-bool eval_dist_with_specific_tower(vector<tower> *indiv, tower tower_spe, const int dist);
+bool check_dist(vector<tower> *indiv, const int dist);
+bool check_dist_with_specific_tower(vector<tower> *indiv, tower tower_spe, const int dist);
 bool compare_indiv(const void * indiv_a, const void * indiv_b);
 void sort_population(vector<vector<tower>*>* population);
 int aliased_select(vector<vector<tower>*> *population);
