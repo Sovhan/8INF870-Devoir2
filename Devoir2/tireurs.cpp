@@ -375,6 +375,9 @@ void shooter_repartition(const char * input_file_name, const float mutation_prob
 			cout << i+1 << " : ";
 			print_indiv((*population)[i]);
 		}
+
+		simulate_day(population->front(), towers, dist, taux_var);
+
 		for (vector<vector<tower>*>::iterator it  = population->begin(); it != population->end(); it++){
 			delete *it;
 		}
@@ -421,6 +424,9 @@ void shooter_repartition(const char * input_file_name, const float mutation_prob
 			}
 		}
 		print_indiv(best_indiv);
+
+		simulate_day(best_indiv, towers, dist, taux_var);
+
 		free(perm_indexes);
 		delete best_indiv;
 		delete tmp_indiv;
@@ -428,6 +434,25 @@ void shooter_repartition(const char * input_file_name, const float mutation_prob
 	}
 
 	delete towers;
+}
+
+void simulate_day(vector<tower>* solution, vector<tower>* towers, const int dist, float taux_var)
+{
+	cout << "DAY: " << endl;
+	int index, n = (int) towers->size();
+	for (int i = 0; i < 10; i++) {
+		cout << i << "h: ";
+		for (vector<tower>::iterator it = solution->begin(); it != solution->end(); it++) {
+			if (it->var_est < 1) {
+				do {
+					index = rand() % n;
+				} while (find(solution->begin(), solution->end(), (*towers)[index]) != solution->end() || !check_dist_with_specific_tower(solution, (*towers)[index], dist));
+				change_var(towers, index, taux_var);
+				*it = (*towers)[index];
+			}
+		}
+		print_indiv(solution);
+	}
 }
 
 void print_towers(vector<tower> &towers) {
