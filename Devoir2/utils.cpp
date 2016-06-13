@@ -8,6 +8,7 @@
 void tower_parse(const char* input_file_name, vector<tower> &towers, int &k, int &n){
 	ifstream input_file;
 	tower tmp_tower;
+	int id = 0;
 	//TODO: try catch here
 	input_file.open(input_file_name);
 	if(!input_file.good()){
@@ -30,9 +31,12 @@ void tower_parse(const char* input_file_name, vector<tower> &towers, int &k, int
 
 	//get towers on renascance street
 	while(!input_file.eof()){
+		tmp_tower.id = id;
 		input_file >> tmp_tower.dist;
 		input_file >> tmp_tower.kill_est;
+		tmp_tower.var_est = 0.0;
 		towers.push_back(tmp_tower);
+		id++;
 	}
 }
 
@@ -57,4 +61,9 @@ int binomial_coef(int n, int k){
 
 double stirling_approx(int n){
 	return static_cast<int> (n * log(n)) - n + (0.5 * log(2 * M_PI * n));
+}
+
+float unif(float a, float b){
+	float x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+	return (x * (b - a)) + a;
 }
