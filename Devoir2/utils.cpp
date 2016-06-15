@@ -4,6 +4,24 @@
 
 #include "utils.h"
 
+void city_parse(const char* input_file_name, vector<point> &points) {
+	ifstream input_file;
+	point tmp_point;
+	int id;
+	//TODO: try catch here
+	input_file.open(input_file_name);
+	if (!input_file.good()) {
+		//TODO: throw here
+	}
+	//get towers on renascance street
+	while (!input_file.eof()) {
+		input_file >> id;
+		tmp_point.id = id - 1;
+		input_file >> tmp_point.x;
+		input_file >> tmp_point.y;
+		points.push_back(tmp_point);
+	}
+}
 
 void tower_parse(const char* input_file_name, vector<tower> &towers, int &k, int &n){
 	ifstream input_file;

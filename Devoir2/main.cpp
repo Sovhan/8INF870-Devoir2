@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "tireurs.h"
+#include "cartouches.h"
 #include "messages.h"
 
 using namespace std;
@@ -21,8 +22,11 @@ int main(void){
 	//shooter_repartition("../Fichiers test/T_6_30.txt", 0.5, 100, 5, 700, 5);
 	//shooter_repartition("../Fichiers test/T_6_30.txt", 0.5, 100, 5, 2000, 5);
 	//shooter_repartition("../Fichiers test/T_7_30.txt", 0.5, 100, 5, 200, 10);
-	
-	cout << decypher(cypher(string("we attack at dawn\n"), string("ours")), string("ours"));
+
+	approvisionnement("../Fichiers test/ville.txt");
+
+	//cout << decypher(cypher(string("we attack at dawn\n"), string("ours")), string("ours"));
+
 	cout << endl << "program complete, press enter to quit";
 	cin.get();
 	return 0;

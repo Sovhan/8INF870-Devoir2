@@ -14,6 +14,7 @@
 using namespace std;
 
 typedef struct _point{
+	int id;
 	float x;
 	float y;
 } point;
@@ -25,7 +26,7 @@ typedef struct _tower{
 	float var_est;
 } tower;
 
-void city_parse(const char* input_file_name, vector<point> &v);
+void city_parse(const char* input_file_name, vector<point> &points);
 void tower_parse(const char* input_file_name, vector<tower> &towers, int &k, int &n);
 int binomial_coef(int n, int k);
 double stirling_approx(int n);
