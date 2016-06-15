@@ -45,11 +45,11 @@ string cypher(const string _message, const string _key){
 	for(string::iterator it = message.begin(); it != message.end(); it++){
 		if(*it >= 'A' && *it <= 'Z'){
 			code.push_back(table->at(cypher_index(*it))->at(cypher_index(*key_it)));
+			if (*key_it & 1U) rotate_right(*table);
+			if (*key_it & 2U) rotate_down(*table);
+			if (*key_it & 4U) rotate_left(*table);
+			if (*key_it & 8U) rotate_up(*table);
 			if(++key_it == key.end()) key_it = key.begin();
-			if (code.back() & 1U) rotate_right(*table);
-			if (code.back() & 2U) rotate_down(*table);
-			if (code.back() & 4U) rotate_left(*table);
-			if (code.back() & 8U) rotate_up(*table);
 		} else {
 			code.push_back(*it);
 		}
@@ -71,11 +71,12 @@ string decypher(const string _code, const string _key){
 	for(string::iterator it = code.begin(); it != code.end(); it++){
 		if(*it >= 'A' && *it <= 'Z'){
 			message.push_back(decypher_index(*it, *key_it, *table));
+			if (*key_it & 1U) rotate_right(*table);
+			if (*key_it & 2U) rotate_down(*table);
+			if (*key_it & 4U) rotate_left(*table);
+			if (*key_it & 8U) rotate_up(*table);
 			if(++key_it == key.end()) key_it = key.begin();
-			if (*it & 1U) rotate_right(*table);
-			if (*it & 2U) rotate_down(*table);
-			if (*it & 4U) rotate_left(*table);
-			if (*it & 8U) rotate_up(*table);
+
 		} else {
 			message.push_back(*it);
 		}
