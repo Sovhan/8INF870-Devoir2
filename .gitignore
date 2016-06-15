@@ -1,6 +1,6 @@
 **/Debug/**
 *.sdf
-**.vcxproj**
+Devoir2/**.vcxproj**
 **.VC**
 **.opensdf
 **.vs
