@@ -29,7 +29,7 @@ bool is_easy_solution(const int k, const int n);
 void child_insertion(vector<tower> *child, vector<vector<tower>*>* population);
 vector<vector<tower>*>* reproduction_iteration(const int nb_children, const float mutation_prob, vector<vector<tower>*>* population, vector<tower>* towers, const int dist, float taux_var);
 vector<vector<tower>*>* copy_population(vector<vector<tower>*>* population);
-void shooter_repartition(const char* input_file_name, const float mutation_prob, const int population_size, const int nb_children, const int nb_iteration, const int dist, float taux_var);
+void shooter_repartition(const char* input_file_name, const float mutation_prob, const int population_size, const int nb_children, const int nb_iteration, const int dist, float taux_var, bool sim);
 void simulate_day(vector<tower> * solution, vector<tower> * towers, const int dist, float taux_var);
 
 void print_towers(vector<tower> &towers);

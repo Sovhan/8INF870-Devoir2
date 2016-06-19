@@ -335,7 +335,7 @@ vector<vector<tower>*>* copy_population(vector<vector<tower>*>* population)
 * \fn shooter_repartition genetic algorithm heuristic for selection of towers (question1)
 */
 void shooter_repartition(const char * input_file_name, const float mutation_prob, const int population_size, 
-						 const int nb_children, const int nb_iteration, const int dist, float taux_var)
+						 const int nb_children, const int nb_iteration, const int dist, float taux_var, bool sim)
 {
 	vector<tower>* towers = new vector<tower>();
 	int k, n;
@@ -376,7 +376,8 @@ void shooter_repartition(const char * input_file_name, const float mutation_prob
 			print_indiv((*population)[i]);
 		}
 
-		simulate_day(population->front(), towers, dist, taux_var);
+		if(sim)
+			simulate_day(population->front(), towers, dist, taux_var);
 
 		for (vector<vector<tower>*>::iterator it  = population->begin(); it != population->end(); it++){
 			delete *it;
@@ -424,8 +425,9 @@ void shooter_repartition(const char * input_file_name, const float mutation_prob
 			}
 		}
 		print_indiv(best_indiv);
-
-		simulate_day(best_indiv, towers, dist, taux_var);
+		
+		if (sim)
+			simulate_day(best_indiv, towers, dist, taux_var);
 
 		free(perm_indexes);
 		delete best_indiv;
