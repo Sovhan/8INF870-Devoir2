@@ -1,10 +1,14 @@
 /**
 * \author Olivier SOLDANO & Ophélie PELLOUX-PRAYER
+* Function for resolve the Question 6 problem
+* Vigenere solution
 */
 
 #include "messages.h"
-#include <algorithm>
 
+/**
+ * Genere the vigenere table
+**/
 vector<vector<char>*>* generate_vigenere(){
 
 	vector<vector<char>*> *table = new vector<vector<char>*>();
@@ -19,10 +23,12 @@ vector<vector<char>*>* generate_vigenere(){
 	return table;
 }
 
+// find the cypher index
 int cypher_index(char c){
 	return c - 'A';
 }
 
+// find the decypher index
 int decypher_index(char c, char k, vector<vector<char>*> &table ){
 	int index = k - 'A';
 	for (int i = 0; i < 26; i++){
@@ -31,7 +37,9 @@ int decypher_index(char c, char k, vector<vector<char>*> &table ){
 	return -1;
 }
 
-
+/**
+ * Cypher function
+**/
 string cypher(const string _message, const string _key){
 	vector<vector<char>*> *table = generate_vigenere();
 	string &code = string();
@@ -58,6 +66,9 @@ string cypher(const string _message, const string _key){
 	return code;
 }
 
+/**
+ * Decypher function
+**/
 string decypher(const string _code, const string _key){
 	vector<vector<char>*> *table = generate_vigenere();
 	string &message = string();
