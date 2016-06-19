@@ -1,9 +1,14 @@
 /**
 * \author Olivier SOLDANO & Ophélie PELLOUX-PRAYER
+* Function for the resolution of question 5
+* 2-opt solution
 */
 
 #include "cartouches.h"
 
+/**
+ * Creat the graph define by adjacence array
+**/
 float** construct_graph(vector<point> &points) {
 	int size = points.size();
 	float** graph = (float**)malloc(size * sizeof(float*));
@@ -22,10 +27,16 @@ float** construct_graph(vector<point> &points) {
 	return graph;
 }
 
+/**
+ * Calcul the distance between two points
+**/
 float dist(point &p1, point &p2) {
 	return sqrt((p1.x - p2.x)*(p1.x - p2.x) + (p1.y - p2.y)*(p1.y - p1.y));
 }
 
+/**
+ * Calcul the sum of each distance between each adjacent point
+**/
 float sum_dist(float** graph, vector<point> &solution){
 	float sum = 0.0f;
 	int size = solution.size();
@@ -36,6 +47,9 @@ float sum_dist(float** graph, vector<point> &solution){
 	return sum;
 }
 
+/**
+ * Swap two point
+**/
 void swap(vector<point> &solution, int id1, int id2){
 	point point_tmp;
 	point_tmp = solution[id1];
@@ -43,6 +57,9 @@ void swap(vector<point> &solution, int id1, int id2){
 	solution[id2] = point_tmp;
 }
 
+/**
+ * Random mix of the solution
+**/
 void mix(vector<point>& solution){
 	int size = solution.size();
 	for (int i = 0; i < size; i++) {
@@ -51,7 +68,8 @@ void mix(vector<point>& solution){
 }
 
 /**
-fonction 2 - opt(G : Graphe, H : CycleHamiltonien)
+ * Apply the 2-opt algorithm
+fonction 2-opt(G : Graphe, H : CycleHamiltonien)
 	amélioration : booléen : = vrai
 	Tant que amélioration = vrai faire
 		amélioration : = faux;
@@ -85,6 +103,9 @@ void k_opt(float** graph, vector<point> &solution_initial) {
 	}
 }
 
+/**
+ * Principal function
+**/
 void approvisionnement(const char * input_file_name) {
 	vector<point>* points = new vector<point>();
 	city_parse(input_file_name, *points);
