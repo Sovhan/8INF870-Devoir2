@@ -1,10 +1,14 @@
 /**
 * \author Olivier SOLDANO & Ophélie PELLOUX-PRAYER
+* Function for the question 1 - 2 - 3 - 4
+* Genetic Algorithm
 */
 
 #include "tireurs.h"
-#include "utils.h"
 
+/**
+ * Update variance of the tower selected and the two adjacents towers
+**/
 void change_var(vector<tower>* towers, int index, float taux_var)
 {
 	float var = unif(-taux_var, taux_var);
@@ -29,6 +33,9 @@ void change_var(vector<tower>* towers, int index, float taux_var)
 	}
 }
 
+/**
+ * Reset the variance of all towers
+**/
 void reset_towers(vector<tower>* towers)
 {
 	for (int l = 0; l < (int) towers->size(); l++) {
@@ -36,6 +43,9 @@ void reset_towers(vector<tower>* towers)
 	}
 }
 
+/**
+ * Spread the variance of each tower of a specific individu
+**/
 void spread_indiv_var(vector<tower>* indiv, vector<tower> *towers, float taux_var)
 {
 	reset_towers(towers);
@@ -46,8 +56,8 @@ void spread_indiv_var(vector<tower>* indiv, vector<tower> *towers, float taux_va
 }
 
 /**
-*
-*/
+ * Genere the initial population : size = n/k
+**/
 vector<vector<tower>*>* generate_initial_pop(vector<tower>* towers, int &k, const int dist, float taux_var){
 	int next, n = towers->size();
 	vector<vector<tower>*>* population = new vector<vector<tower>*>();
@@ -70,8 +80,8 @@ vector<vector<tower>*>* generate_initial_pop(vector<tower>* towers, int &k, cons
 }
 
 /**
-*
-*/
+ * Evaluat an individu : calcul the estimation tower's sum
+**/
 int eval_indiv(vector<tower> * indiv){
 	int value = 0;
 	
@@ -81,10 +91,10 @@ int eval_indiv(vector<tower> * indiv){
 
 	return value;
 }
-
 /**
-* \returns false if a couple of towers in the vector are too close according to dist
-*/
+ * Check if an individu respect the distance constrainte
+ * \returns false if a couple of towers in the vector are too close according to dist
+**/
 bool check_dist(vector<tower>* indiv, const int dist)
 {
 	if (dist > 0) {
@@ -94,10 +104,10 @@ bool check_dist(vector<tower>* indiv, const int dist)
 	}
 	return true;
 }
-
 /**
-* \returns false if tower_spe is too close of another tower in the vector
-*/
+ * Check if a specific towers respect the distance with each other tower of an individu
+ * \returns false if tower_spe is too close of another tower in the vector
+**/
 bool check_dist_with_specific_tower(vector<tower>* indiv, tower tower_spe, const int dist)
 {
 	for (vector<tower>::iterator it = indiv->begin(); it != indiv->end(); it++) {
@@ -107,8 +117,8 @@ bool check_dist_with_specific_tower(vector<tower>* indiv, tower tower_spe, const
 }
 
 /**
-*
-*/
+ * Compare two individus
+**/
 bool compare_indiv(const void * indiv_a, const void * indiv_b)
 {
 	// reverse comparison order for descending order in std::sort 
@@ -120,15 +130,17 @@ bool compare_indiv(const void * indiv_a, const void * indiv_b)
 }
 
 /**
-*
-*/
+ * Sort the population in descending order
+**/
 void sort_population(vector<vector<tower>*>* population){
 	sort(population->begin(), population->end(), compare_indiv);
 }
 
 /**
-*
-*/
+ * Aliasing selection of an individu
+ * 50% -> the best ten
+ * 50% -> the 90 others
+**/
 int aliased_select(vector<vector<tower>*> *population){
 	if (population->size() <= 20) { return rand() % population->size(); }
 	int pos;
@@ -143,8 +155,9 @@ int aliased_select(vector<vector<tower>*> *population){
 }
 
 /**
-*
-*/
+ * Reproduction between two individu
+ * Mix : [1 2 3 4 5] + [15 16 17 18 19] = [1 2 17 18 19] and [15 16 3 4 5]
+**/
 vector<tower>* mix(vector<tower>* parent1, vector<tower>* parent2, const int dist, vector<tower>* towers, float taux_var){
 	vector<tower>* child1 = new vector<tower>();
 	vector<tower>* child2 = new vector<tower>();
@@ -220,8 +233,10 @@ vector<tower>* mix(vector<tower>* parent1, vector<tower>* parent2, const int dis
 }
 
 /**
-*
-*/
+ * Change one individu's chromosome
+ * Respect the distance and the spread variation
+ * If the distance isn't respect the mutation is rejected
+**/
 void mutate(vector<tower>* individu, vector<tower>* towers, const int dist, float taux_var)
 {
 	if (individu->size() != towers->size()) {
@@ -238,8 +253,8 @@ void mutate(vector<tower>* individu, vector<tower>* towers, const int dist, floa
 }
 
 /**
-*
-*/
+ * Check if the problem have less of 100.000 permutation if it's the case we use the naive algorithm
+**/
 bool is_easy_solution(const int k, const int n)
 {
 	double fn, fk, fnk, ll, bino;
@@ -257,8 +272,10 @@ bool is_easy_solution(const int k, const int n)
 
 
 /**
-*
-*/
+* Insert the child in the population
+* If it's best of the less good of the population and if it'sn't in the population
+* Else we delete it
+**/
 void child_insertion(vector<tower>* child, vector<vector<tower>*>* population)
 {
 	if (*child > *population->back() && !find_indiv(population, child)){
@@ -277,8 +294,8 @@ void child_insertion(vector<tower>* child, vector<vector<tower>*>* population)
 
 
 /**
-*
-*/
+ * Reproduction phase
+**/
 vector<vector<tower>*>* reproduction_iteration(const int nb_children, const float mutation_prob, vector<vector<tower>*>* population, vector<tower>* towers, const int dist, float taux_var)
 {
 	vector<vector<tower>*>* remaining_parents = copy_population(population); // copy of the population
@@ -316,6 +333,9 @@ vector<vector<tower>*>* reproduction_iteration(const int nb_children, const floa
 	
 }
 
+/**
+ * Creat a copy of the population
+**/
 vector<vector<tower>*>* copy_population(vector<vector<tower>*>* population)
 {
 	vector<vector<tower>*>* copy = new vector<vector<tower>*>();
@@ -332,8 +352,9 @@ vector<vector<tower>*>* copy_population(vector<vector<tower>*>* population)
 
 
 /**
-* \fn shooter_repartition genetic algorithm heuristic for selection of towers (question1)
-*/
+ * Principal function of the Genetic Algorithm
+ * \fn shooter_repartition genetic algorithm heuristic for selection of towers
+**/
 void shooter_repartition(const char * input_file_name, const float mutation_prob, const int population_size, 
 						 const int nb_children, const int nb_iteration, const int dist, float taux_var, bool sim)
 {
@@ -438,6 +459,10 @@ void shooter_repartition(const char * input_file_name, const float mutation_prob
 	delete towers;
 }
 
+/**
+ * Simulate a day
+ * Print the result of each hour
+**/
 void simulate_day(vector<tower>* solution, vector<tower>* towers, const int dist, float taux_var)
 {
 	cout << "DAY: " << endl;
